@@ -2,6 +2,8 @@
 
 namespace App\TableGenerator\Singles;
 
+use Illuminate\Support\Arr;
+
 class Single
 {
     private $count;
@@ -17,33 +19,31 @@ class Single
 
     public function makePreview()
     {
-        $smallest_power_of_two = $this->findingPowerOfTwoWhichParticipantsCountIsSmallerThanItsResult();
+        $smallest_power_of_two = $this->findingPowerOfTwoWhichParticipantsCountIsSmallerThanItsResult($this->count);
 
         $this->fillingRemainingMembersOfParticipantsArrayWithBay($smallest_power_of_two);
 
         $first_round = $this->determiningCompetitor($smallest_power_of_two);
 
-//        $uselessMethod = $this->uselessMethod($smallest_power_of_two, $first_round);
-        $first_round_with_true_order = $this->makeGamesOrderTrue($first_round, $smallest_power_of_two);
+        $first_round_with_lower_half_and_upper_half_true_order = $this->makeLowerHalfAndUpperHalfGamesOrderTrue($first_round, $smallest_power_of_two);
 
-        $first_round_with_true_order_flatten = $this->flatten($first_round_with_true_order);
+        $first_round_which_lower_half_is_reversed = $this->reverseLowerHalfOfFirstRound($first_round_with_lower_half_and_upper_half_true_order);
 
-        $count_first_round = count($first_round_with_true_order_flatten) / 2;
-        [$part1, $part2] = array_chunk($first_round_with_true_order_flatten, $count_first_round, true);
+        $first_round_games = array_chunk($first_round_which_lower_half_is_reversed, 2);
 
+        return $first_round_games;
     }
 
-    private function findingPowerOfTwoWhichParticipantsCountIsSmallerThanItsResult(): int
+    public function findingPowerOfTwoWhichParticipantsCountIsSmallerThanItsResult($count): int
     {
-        $i = 0;
+        $power_of_two = 0;
         do {
+            $smallest_power_of_two = $power_of_two;
+            $power = pow(2, $power_of_two);
+            $power_of_two++;
+        } while ($power < $count);
 
-            $squar = $i;
-            $pow = pow(2, $i);
-            $i++;
-        } while ($pow < $this->count);
-
-        return $squar;
+        return $smallest_power_of_two;
     }
 
     private function fillingRemainingMembersOfParticipantsArrayWithBay(int $smallest_power_of_two): void
@@ -59,70 +59,59 @@ class Single
     {
         $games_count = pow(2, $smallest_power_of_two) / 2;
 
-        $x = 0;
-        $j = 1;
-        while ($j <= $games_count) {
+        $participant_index = 0;
+        $game_no = 1;
+        $first_round = [];
+
+        while ($game_no <= $games_count) {
 
             $i = 1;
-            $row1[$j][$i] = $this->participants[$x];
+            $first_round[$game_no][$i] = $this->participants[$participant_index];
 
-            $j++;
-            $x++;
+            $game_no++;
+            $participant_index++;
         }
-        $j = $games_count;
-        while ($j >= 1) {
+        $game_no = $games_count;
+        while ($game_no >= 1) {
 
             $i = 2;
-            $row1[$j][$i] = $this->participants[$x];
+            $first_round[$game_no][$i] = $this->participants[$participant_index];
 
-            $j--;
-            $x++;
-        }
-        return $row1;
-    }
-
-    private function uselessMethod(int $smallest_power_of_two, array $first_round): array
-    {
-        $games_count = pow(2, $smallest_power_of_two) / 2;
-
-        if (count($first_round) > $games_count) {
-            for ($d = 1; $d <= $games_count; $d++) {
-                array_pop($first_round);
-            }
+            $game_no--;
+            $participant_index++;
         }
         return $first_round;
     }
 
-    private function makeGamesOrderTrue(array $first_round, int $smallest_power_of_two): array
+    private function makeLowerHalfAndUpperHalfGamesOrderTrue(array $first_round, int $smallest_power_of_two): array
     {
-// :: :: :: :: :: :: :: :: :: :: :: another ordering for bar times :: :: :: :: :: :: :: :: :: :: :: :: ::
-
         $games_count = count($first_round) / 2;
 
-        $bar = ($smallest_power_of_two - 2);
+        $bar_count = ($smallest_power_of_two - 2);
 
-        for ($k = 1; $k <= $bar; $k++) {
+        for ($bar = 1; $bar <= $bar_count; $bar++) {
 
-            $x = 1;
-            $j = 1;
+            $game_position = 1;
+            $participants_position = 1;
 
-            while ($j <= $games_count) {
+            while ($game_position <= $games_count) {
 
-                $i = 1;
-                $first_round[$j][$i] = $first_round[$x];
+                $player_position = 1;
+                $first_round[$game_position][$player_position] = $first_round[$participants_position];
 
-                $j++;
-                $x++;
+                $game_position++;
+                $participants_position++;
 
             }
-            $j = $games_count;
-            while ($j >= 1) {
+            $game_position = $games_count;
+            while ($game_position >= 1) {
 
-                $i = 2;
-                $first_round[$j][$i] = $first_round[$x];
+                $player_position = 2;
+                $first_round[$game_position][$player_position] = $first_round[$participants_position];
 
-                $j--;
-                $x++;
+                $game_position--;
+                $participants_position++;
+
             }
 
             if (count($first_round) > $games_count) {
@@ -133,15 +122,102 @@ class Single
 
             $games_count = count($first_round) / 2;
         }
-        return $first_round;
+
+        return $this->flatten($first_round);
+
+    }
+
+    private function reverseLowerHalfOfFirstRound($first_round): array
+    {
+        $count_first_round = count($first_round) / 2;
+
+        [$upper_half, $lower_half] = array_chunk($first_round, $count_first_round, true);
+
+        [$upper_half, $lower_half] = $this->exceptionHandling($upper_half, $lower_half);
+
+        $lower_half_reversed = array_reverse($lower_half);
+
+        return array_merge($upper_half, $lower_half_reversed);
     }
 
     private function flatten(array $array)
     {
-        $return = array();
-        array_walk_recursive($array, function ($a) use (&$return) {
-            $return[] = $a;
+        $array_to_flatt = array();
+        array_walk_recursive($array, function ($a) use (&$array_to_flatt) {
+            $array_to_flatt[] = $a;
         });
-        return $return;
+        return $array_to_flatt;
+    }
+
+    private function exceptionHandling($part1, $part2){
+        if ($this->count < 33 && $this->count > 16) {
+            $part1 = array_chunk($part1, 2);
+            $part1 = array_chunk($part1, 2);
+            $part1[1] = array_reverse($part1[1]);
+            $part1[2] = array_reverse($part1[2]);
+            $part1[4] = $part1[2];
+            $part1[2] = $part1[3];
+            $part1[3] = $part1[4];
+            unset($part1[4]);
+            $part1 = $this->flatten($part1);
+
+            $part2 = array_chunk($part2, 2);
+            $part2 = array_chunk($part2, 2);
+            $part2[1] = array_reverse($part2[1]);
+            $part2[2] = array_reverse($part2[2]);
+            $part2[4] = $part2[2];
+            $part2[2] = $part2[3];
+            $part2[3] = $part2[4];
+            unset($part2[4]);
+            $part2 = $this->flatten($part2);
+
+        } elseif ($this->count < 17 && $this->count > 8) {
+            $part1 = array_chunk($part1, 2);
+            $part1 = array_chunk($part1, 2);
+            $part1[1] = array_reverse($part1[1]);
+            $part1 = $this->flatten($part1);
+
+            $part2 = array_chunk($part2, 2);
+            $part2 = array_chunk($part2, 2);
+            $part2[1] = array_reverse($part2[1]);
+            $part2 = $this->flatten($part2);
+        }
+
+        return [$part1, $part2];
+    }
+
+    public function getSingleSchema(int $row_count, $row_member_count, array $schema, int $count_first_round_participants, $first_round_flatted): array
+    {
+        for ($j = 1; $j <= $row_count + 1; $j++) {
+
+            for ($k = 1; $k <= $row_member_count; $k++) {
+                $schema[$j][$k] = '';
+            }
+
+            $row_member_count = $row_member_count / 2;
+        }
+
+        for ($member = 1; $member <= $count_first_round_participants; $member++) {
+            $schema[1][$member] = $first_round_flatted;
+        }
+        return $schema;
+    }
+
+    public function storeSingleSchema($first_round)
+    {
+        $first_round_flatted = Arr::flatten($first_round);
+
+        $count_first_round_participants = count($first_round_flatted);
+
+        $row_count = $this->findingPowerOfTwoWhichParticipantsCountIsSmallerThanItsResult($count_first_round_participants);
+
+        $schema = [];
+
+        $row_member_count = $count_first_round_participants;
+
+        $schema = $this->getSingleSchema($row_count, $row_member_count, $schema, $count_first_round_participants, $first_round_flatted);
+
+        return $schema;
+
     }
 }

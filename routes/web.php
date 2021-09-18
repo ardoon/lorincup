@@ -26,12 +26,14 @@ Route::resource('tournaments', 'TournamentController');
 
 Route::post('participants', 'ParticipantController@store')->name('participants.store');
 
-Route::get('tables/{table}', 'TableController@show')->name('tables.show');
+Route::get('tables/{table}', 'TableController@preview')->name('tables.show');
+Route::get('tables/{table}/storeTableSchema', 'TableController@storeTableSchema');
+Route::get('tables/{table}/schema', 'TableController@getSchema');
 Route::get('tables/start/{table}', 'TableController@start')->name('tables.start');
 Route::get('tables/end/{table}', 'TableController@end')->name('tables.end');
 Route::get('tables/open/{table}', 'TableController@open')->name('tables.open');
 Route::get('tables/progress/{table}', 'TableController@progress')->name('tables.progress');
-Route::post('tables/win/{table}', 'TableController@win')->name('tables.win');
+Route::post('tables/{table}/win', 'TableController@win')->name('tables.win');
 Route::post('tables/win-double/{table}', 'TableController@winDouble');
 Route::get('tables/schema/{tournament}', 'TableController@scheme')->name('tables.scheme');
 Route::post('tables', 'TableController@store')->name('tables.store');
