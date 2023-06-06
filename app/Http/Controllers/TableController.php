@@ -110,7 +110,11 @@ class TableController extends Controller
     private function getTournamentAndTable($id): array
     {
         $table = Table::where('id', $id)->first();
-        $tournament = $table->tournament()->first();
-        return array($table, $tournament);
+        if($table) {
+            $tournament = $table->tournament()->first();
+            return array($table, $tournament);
+        } else {
+            return array();
+        }
     }
 }
