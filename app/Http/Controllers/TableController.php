@@ -39,7 +39,7 @@ class TableController extends Controller
             'tournament_type' => 'required',
         ]);
 
-        dd('here')
+        dd('here');
 
         $tournament = Tournament::where('id', $request->tournament_id)->first();
 
