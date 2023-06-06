@@ -39,7 +39,7 @@ class TableController extends Controller
             'tournament_type' => 'required',
         ]);
 
-        $tournament = Tournament::where('id', $request->tournament_id)->first();
+        $tournament = Tournament::find($request->tournament_id);
         $table = $tournament->tables()->create([
             'type' => $request->tournament_type,
         ]);
