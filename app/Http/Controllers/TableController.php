@@ -114,7 +114,7 @@ class TableController extends Controller
             $tournament = $table->tournament()->first();
             return array($table, $tournament);
         } else {
-            return array();
+            return [null, null];
         }
     }
 }
