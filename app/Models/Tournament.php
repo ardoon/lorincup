@@ -11,7 +11,7 @@ class Tournament extends Model
 
     public function tables()
     {
-        return $this->hasMany(Table::class);
+        return $this->hasMany('App\Models\Table');
     }
 
 
