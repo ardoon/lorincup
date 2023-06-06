@@ -24,9 +24,11 @@ class TableController extends Controller
 
         list($this->table, $this->tournament) = $this->getTournamentAndTable($table_id);
 
-        $participants = json_decode($this->tournament->participants);
+        if($tournament !== null) {
+            $participants = json_decode($this->tournament->participants);
 
-        $this->single = new Single($participants);
+            $this->single = new Single($participants);
+        }
 
 //        $this->middleware('auth');
     }
