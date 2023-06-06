@@ -39,8 +39,6 @@ class TableController extends Controller
             'tournament_type' => 'required',
         ]);
 
-        dd('here');
-
         $tournament = Tournament::where('id', $request->tournament_id)->first();
 
         $table = $tournament->tables()->create([
@@ -111,7 +109,7 @@ class TableController extends Controller
 
     private function getTournamentAndTable($id): array
     {
-        $table = Table::where('id', $id)->firstOrfail();
+        $table = Table::where('id', $id)->first();
         $tournament = $table->tournament()->first();
         return array($table, $tournament);
     }
