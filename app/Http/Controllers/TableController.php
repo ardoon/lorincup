@@ -45,6 +45,8 @@ class TableController extends Controller
             'type' => $request->tournament_type
         ]);
 
+        dd($table);
+
         return $table->id;
 
     }
