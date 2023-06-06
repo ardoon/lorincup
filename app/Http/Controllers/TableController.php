@@ -24,7 +24,7 @@ class TableController extends Controller
 
         list($this->table, $this->tournament) = $this->getTournamentAndTable($table_id);
 
-        if($tournament !== null) {
+        if($this->$tournament !== null) {
             $participants = json_decode($this->tournament->participants);
 
             $this->single = new Single($participants);
